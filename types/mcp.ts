@@ -20,7 +20,7 @@ export interface MCP {
   forks?: number | null;          // GitHub repository fork count, updated to accept null
   open_issues?: number | null;    // GitHub repository open issues count, updated to accept null
   last_repo_update?: string | null; // Updated to accept null values
-  languages?: string[];    // Programming languages used in the repository
+  languages?: string[] | null;    // Fixed to accept null values to match database schema
   default_branch?: string | null; // Add the default branch property
   profiles?: {             // Updated profiles property to include username
     email?: string;

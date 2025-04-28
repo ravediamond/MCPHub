@@ -117,6 +117,8 @@ export interface Database {
                     forks: number | null;
                     open_issues: number | null;
                     last_repo_update: string | null;
+                    languages: string[] | null;
+                    default_branch: string | null;
                 };
                 Insert: {
                     id?: string;
@@ -140,6 +142,8 @@ export interface Database {
                     forks?: number | null;
                     open_issues?: number | null;
                     last_repo_update?: string | null;
+                    languages?: string[] | null;
+                    default_branch?: string | null;
                 };
                 Update: {
                     id?: string;
@@ -163,10 +167,57 @@ export interface Database {
                     forks?: number | null;
                     open_issues?: number | null;
                     last_repo_update?: string | null;
+                    languages?: string[] | null;
+                    default_branch?: string | null;
                 };
                 Relationships: [
                     {
                         foreignKeyName: "mcps_user_id_fkey";
+                        columns: ["user_id"];
+                        isOneToOne: false;
+                        referencedRelation: "users";
+                        referencedColumns: ["id"];
+                    }
+                ];
+            };
+            reviews: {
+                Row: {
+                    id: string;
+                    created_at: string;
+                    updated_at: string | null;
+                    mcp_id: string;
+                    user_id: string;
+                    rating: number;
+                    comment: string | null;
+                };
+                Insert: {
+                    id?: string;
+                    created_at?: string;
+                    updated_at?: string | null;
+                    mcp_id: string;
+                    user_id: string;
+                    rating: number;
+                    comment?: string | null;
+                };
+                Update: {
+                    id?: string;
+                    created_at?: string;
+                    updated_at?: string | null;
+                    mcp_id?: string;
+                    user_id?: string;
+                    rating?: number;
+                    comment?: string | null;
+                };
+                Relationships: [
+                    {
+                        foreignKeyName: "reviews_mcp_id_fkey";
+                        columns: ["mcp_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mcps";
+                        referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "reviews_user_id_fkey";
                         columns: ["user_id"];
                         isOneToOne: false;
                         referencedRelation: "users";
