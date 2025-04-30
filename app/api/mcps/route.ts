@@ -2,7 +2,60 @@ import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from 'lib/supabaseClient';
 import { fetchComprehensiveRepoData } from 'services/githubService';
 import { MCP } from 'types/mcp';
+import { validateApiKey } from 'utils/apiKeyValidation'; // Import validation utility
 
+// --- GET Handler ---
+export async function GET(request: NextRequest) {
+  // Optional: Add API key validation if this endpoint needs protection
+  const searchParams = request.nextUrl.searchParams;
+  const tokenParam = searchParams.get('token'); // Check for token if required by initializeServer
+
+  // Example check if validation is needed - adjust environment variable name as needed
+  const apiKeyRequired = process.env.MCP_API_KEY_REQUIRED === 'true';
+
+  if (apiKeyRequired) {
+    if (!tokenParam) {
+      console.error('GET /api/mcps: Unauthorized - Missing API key');
+      return NextResponse.json({ error: 'Unauthorized: Missing API key' }, { status: 401 });
+    }
+    const validationResult = await validateApiKey(tokenParam);
+    if (!validationResult.valid) {
+      console.error('GET /api/mcps: Unauthorized - Invalid API key');
+      return NextResponse.json({ error: 'Unauthorized: Invalid API key' }, { status: 401 });
+    }
+    console.log('GET /api/mcps: API Key validated successfully');
+  }
+
+  try {
+    console.log("GET /api/mcps: Fetching all MCPs from database...");
+    const { data: mcps, error } = await supabase
+      .from('mcps')
+      .select('*') // Select all columns
+      .order('created_at', { ascending: false }); // Optional: order by creation date
+
+    if (error) {
+      console.error("GET /api/mcps: Error fetching MCPs:", error);
+      return NextResponse.json(
+        { error: error.message },
+        { status: 500 }
+      );
+    }
+
+    console.log(`GET /api/mcps: Retrieved ${mcps?.length || 0} MCPs from database`);
+    // Return data under 'mcps' key, consistent with initializeServer expectation
+    return NextResponse.json({ mcps: mcps || [] }, { status: 200 });
+
+  } catch (error) {
+    console.error('GET /api/mcps: Error fetching MCPs:', error);
+    return NextResponse.json({
+      error: 'Internal server error',
+      details: error instanceof Error ? error.message : 'Unknown error'
+    }, { status: 500 });
+  }
+}
+
+
+// --- POST Handler ---
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
